@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Etear Works — Global EV Comparison Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --dark:#060E17;--surface:#0D1B2A;--surface2:#0F2338;--border:#1A3352;
+  --teal:#00C6AE;--teal2:#00A896;--steel:#1E3A5F;--muted:#8BA7C0;
+  --text:#E2EAF0;--text2:#B0C4D4;
+}
+html,body{min-height:100vh;background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--steel);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--teal)}
+.glass{background:rgba(13,27,42,0.8);backdrop-filter:blur(16px);border:1px solid rgba(0,198,174,0.12)}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:52px;display:flex;align-items:center;padding:0 24px;gap:4px;background:rgba(6,14,23,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:8px;margin-right:24px;cursor:pointer;text-decoration:none}
+.brand-logo{width:28px;height:28px;background:var(--teal);border-radius:7px;display:grid;place-items:center}
+.brand-logo svg{width:15px;height:15px;fill:var(--dark)}
+.brand-name{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text)}
+.brand-name span{color:var(--teal)}
+.nav-btn{padding:5px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:.15s;font-family:'DM Sans',sans-serif}
+.nav-btn:hover{background:rgba(255,255,255,.05);color:var(--text)}
+.nav-btn.active{background:rgba(0,198,174,.15);color:var(--teal);border:1px solid rgba(0,198,174,.25)}
+
+/* LAYOUT */
+main{padding:72px 24px 40px;max-width:1200px;margin:0 auto}
+.page{display:none}
+.page.show{display:block}
+
+/* HERO */
+.hero{margin-bottom:28px;position:relative}
+.hero::before{content:'';position:absolute;top:-20px;left:-40px;width:300px;height:300px;background:radial-gradient(circle,rgba(0,198,174,.06) 0%,transparent 70%);pointer-events:none}
+.hero-tag{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--teal);text-transform:uppercase;letter-spacing:.15em;margin-bottom:6px}
+.hero h1{font-size:28px;font-weight:700;color:#fff;margin-bottom:6px}
+.hero h1 span{color:var(--teal)}
+.hero p{font-size:13px;color:var(--muted);max-width:500px;line-height:1.6}
+
+/* STAT PILLS */
+.stat-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.stat-pill{background:rgba(13,27,42,.8);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:12px;color:var(--muted)}
+.stat-pill strong{color:var(--teal);font-weight:600;margin-right:4px}
+
+/* ACTION BAR */
+.action-bar{background:rgba(0,198,174,.05);border:1px solid rgba(0,198,174,.2);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.av-stack{display:flex}
+.av{width:28px;height:28px;border-radius:50%;background:var(--steel);border:2px solid var(--dark);display:grid;place-items:center;font-size:10px;font-weight:700;color:var(--teal);margin-left:-7px}
+.av:first-child{margin-left:0}
+
+/* FILTERS */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+.search-box{position:relative;flex:1;min-width:200px}
+.search-box input{width:100%;padding:8px 12px 8px 32px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:.15s}
+.search-box input:focus{border-color:rgba(0,198,174,.4)}
+.search-box input::placeholder{color:var(--muted)}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:16px;pointer-events:none}
+.fsel{padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;cursor:pointer;outline:none;font-family:'DM Sans',sans-serif}
+.fsel:focus{border-color:rgba(0,198,174,.4)}
+
+/* VEHICLE GRID */
+.v-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.v-card{background:rgba(13,27,42,.9);border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.v-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--teal),transparent);opacity:0;transition:.2s}
+.v-card:hover{border-color:rgba(0,198,174,.3)}
+.v-card:hover::before{opacity:.5}
+.v-card.sel{border-color:rgba(0,198,174,.6);background:rgba(0,198,174,.04)}
+.v-card.sel::before{opacity:1}
+.v-check{position:absolute;top:12px;right:12px;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border);display:grid;place-items:center;transition:.15s}
+.v-card.sel .v-check{background:var(--teal);border-color:var(--teal)}
+.v-brand{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--teal);text-transform:uppercase;letter-spacing:.12em;margin-bottom:3px}
+.v-model{font-size:13px;font-weight:600;color:#fff;margin-bottom:2px}
+.v-meta{font-size:10px;color:var(--muted);margin-bottom:12px}
+.v-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:10px}
+.v-stat{background:rgba(30,58,95,.4);border-radius:7px;padding:7px 5px;text-align:center}
+.v-stat-l{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.v-stat-v{font-size:11px;font-weight:600;color:var(--text);font-family:'JetBrains Mono',monospace}
+.v-tags{display:flex;gap:4px;flex-wrap:wrap}
+.tag{font-size:9px;padding:2px 7px;border-radius:4px;background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.tag.teal{background:rgba(0,198,174,.08);color:var(--teal);border-color:rgba(0,198,174,.2)}
+.v-link{font-size:10px;color:var(--muted);text-decoration:none;margin-top:10px;display:block;transition:.1s}
+.v-link:hover{color:var(--teal)}
+
+/* BUTTONS */
+.btn{padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:.15s}
+.btn-teal{background:var(--teal);color:var(--dark)}
+.btn-teal:hover{background:var(--teal2)}
+.btn-ghost{background:var(--surface);border:1px solid var(--border);color:var(--text)}
+.btn-ghost:hover{border-color:rgba(0,198,174,.3)}
+
+/* COMPARE */
+.c-header-grid{display:grid;gap:10px;margin-bottom:20px}
+.c-vcard{background:var(--surface);border-radius:12px;padding:14px;border-top:2px solid;border-left:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.c-brand{font-size:9px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.12em;margin-bottom:3px}
+.c-model{font-size:14px;font-weight:600;color:#fff}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.chart-card.full{grid-column:1/-1}
+.chart-title{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+.spec-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.spec-tbl th{background:var(--surface2);padding:8px 10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);white-space:nowrap;text-align:center}
+.spec-tbl th:first-child{text-align:left}
+.spec-tbl td{padding:7px 10px;border-bottom:1px solid rgba(26,51,82,.5);color:var(--text2);text-align:center;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:10px}
+.spec-tbl td:first-child{text-align:left;font-family:'DM Sans',sans-serif;font-size:11px;color:var(--muted);font-style:normal}
+.spec-tbl tr:nth-child(even) td{background:rgba(15,35,56,.4)}
+.spec-tbl td.best{color:var(--teal)!important;font-weight:700}
+.spec-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;overflow-x:auto}
+.empty{text-align:center;padding:80px 20px;color:var(--muted)}
+.empty h3{font-size:17px;font-weight:600;color:#fff;margin-bottom:8px}
+.empty p{font-size:13px;margin-bottom:20px}
+
+/* VEHICLES PAGE */
+.vp-row{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.vp-nums{display:flex;gap:20px;flex-wrap:wrap}
+.vp-num{text-align:center}
+.vp-num-l{font-size:9px;text-transform:uppercase;color:var(--muted);letter-spacing:.06em;margin-bottom:2px}
+.vp-num-v{font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--text)}
+
+/* ADMIN */
+.a-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px}
+.a-card h3{font-size:15px;font-weight:600;color:#fff;margin-bottom:6px}
+.a-card p{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6}
+.run-row{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px 16px;display:flex;align-items:center;gap:14px;margin-bottom:8px}
+.badge{font-size:10px;padding:2px 9px;border-radius:5px;font-weight:600}
+.badge-ok{background:rgba(107,203,119,.12);color:#6BCB77;border:1px solid rgba(107,203,119,.2)}
+.badge-run{background:rgba(0,198,174,.1);color:var(--teal);border:1px solid rgba(0,198,174,.2)}
+.sys-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(26,51,82,.4);font-size:12px}
+.sys-row:last-child{border:none}
+.sys-row span:first-child{color:var(--muted)}
+.sys-val-ok{color:#6BCB77;font-weight:600}
+.sys-val-warn{color:#FFD93D;font-weight:600}
+
+/* LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.legend-dot{width:10px;height:10px;border-radius:2px}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .charts-grid{grid-template-columns:1fr}
+  .chart-card.full{grid-column:1}
+  nav{padding:0 12px}
+  main{padding:66px 12px 40px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="brand" onclick="showPage('dash')">
+    <div class="brand-logo">
+      <svg viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
+    </div>
+    <span class="brand-name">Etear<span>Works</span></span>
+  </a>
+  <button class="nav-btn active" id="nb-dash"     onclick="showPage('dash')">Dashboard</button>
+  <button class="nav-btn"        id="nb-vehicles" onclick="showPage('vehicles')">Vehicles</button>
+  <button class="nav-btn"        id="nb-compare"  onclick="showPage('compare')">Compare</button>
+  <button class="nav-btn"        id="nb-admin"    onclick="showPage('admin')">Admin</button>
+</nav>
+
+<main>
+
+<!-- DASHBOARD -->
+<div id="page-dash" class="page show">
+  <div class="hero">
+    <div class="hero-tag">Global EV Intelligence</div>
+    <h1>Etear <span>Works</span></h1>
+    <p>AI-processed specs from OEM websites worldwide. Select up to 4 EVs and compare side-by-side with radar charts, bar graphs, and professional PDF reports.</p>
+  </div>
+  <div class="stat-row">
+    <div class="stat-pill"><strong id="cnt-total">8</strong>vehicles indexed</div>
+    <div class="stat-pill"><strong>8</strong>OEM brands</div>
+    <div class="stat-pill"><strong>6</strong>passenger EVs</div>
+    <div class="stat-pill"><strong>2</strong>e-buses</div>
+    <div class="stat-pill" id="sel-pill" style="display:none"><strong id="cnt-sel">0</strong>/4 selected</div>
+  </div>
+  <div id="action-bar" style="display:none" class="action-bar">
+    <div class="av-stack" id="av-stack"></div>
+    <span id="action-label" style="font-size:12px;color:var(--muted);flex:1"></span>
+    <button class="btn btn-teal" onclick="showPage('compare')">Compare ›</button>
+    <button class="btn btn-ghost" onclick="printPage()">⬇ PDF</button>
+  </div>
+  <div class="filter-row">
+    <div class="search-box">
+      <span class="search-icon">&#9906;</span>
+      <input id="d-search" type="text" placeholder="Search brand, model…" oninput="applyFilters()"/>
+    </div>
+    <select class="fsel" id="d-seg" onchange="applyFilters()">
+      <option value="">All Segments</option>
+      <option value="passenger">Passenger Cars</option>
+      <option value="bus">E-Buses</option>
+      <option value="passenger_suv">SUV</option>
+      <option value="passenger_sedan">Sedan</option>
+      <option value="passenger_crossover">Crossover</option>
+      <option value="bus_city">City Bus</option>
+    </select>
+    <select class="fsel" id="d-range" onchange="applyFilters()">
+      <option value="">Any Range</option>
+      <option value="400">≥ 400 km</option>
+      <option value="500">≥ 500 km</option>
+      <option value="600">≥ 600 km</option>
+    </select>
+    <select class="fsel" id="d-power" onchange="applyFilters()">
+      <option value="">Any Power</option>
+      <option value="150">≥ 150 kW</option>
+      <option value="250">≥ 250 kW</option>
+      <option value="350">≥ 350 kW</option>
+    </select>
+    <select class="fsel" id="d-bat" onchange="applyFilters()">
+      <option value="">Any Battery</option>
+      <option value="40">≥ 40 kWh</option>
+      <option value="60">≥ 60 kWh</option>
+      <option value="80">≥ 80 kWh</option>
+    </select>
+  </div>
+  <div class="v-grid" id="v-grid"></div>
+</div>
+
+<!-- VEHICLES -->
+<div id="page-vehicles" class="page">
+  <div class="hero">
+    <div class="hero-tag">Vehicle Database</div>
+    <h1 style="font-size:20px">All EVs — full spec browser</h1>
+  </div>
+  <div class="filter-row">
+    <div class="search-box"><span class="search-icon">&#9906;</span><input id="vp-search" type="text" placeholder="Search…" oninput="renderVP()"/></div>
+    <select class="fsel" id="vp-seg" onchange="renderVP()"><option value="">All</option><option value="passenger">Passenger</option><option value="bus">E-Bus</option></select>
+    <button class="btn btn-ghost" onclick="toggleSelectAll()">Select all passenger</button>
+  </div>
+  <div id="vp-list"></div>
+</div>
+
+<!-- COMPARE -->
+<div id="page-compare" class="page">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+    <div><div class="hero-tag">Side-by-side Analysis</div><h1 id="cmp-title" style="font-size:20px">Select vehicles on the Dashboard</h1></div>
+    <button id="pdf-btn" class="btn btn-teal" onclick="window.print()" style="display:none">⬇ Export PDF Report</button>
+  </div>
+  <div id="cmp-content"></div>
+</div>
+
+<!-- ADMIN -->
+<div id="page-admin" class="page">
+  <div class="hero"><div class="hero-tag">System Control</div><h1 style="font-size:20px">Admin Panel</h1></div>
+  <div class="a-card">
+    <h3>Manual Scrape Trigger</h3>
+    <p>Launches the Playwright OEM crawler across 14 targets → downloads brochures → processes with Ollama gemma4:e4b → upserts to PostgreSQL. Runs automatically every Monday 02:00 IST.</p>
+    <button class="btn btn-teal" id="scrape-btn" onclick="doScrape()">▶ Trigger Full Scrape</button>
+    <div id="scrape-msg" style="font-size:12px;color:var(--teal);margin-top:10px;font-family:'JetBrains Mono',monospace"></div>
+  </div>
+  <div class="a-card">
+    <h3>Run History</h3>
+    <div id="run-history">
+      <div style="text-align:center;padding:28px;color:var(--muted);font-size:13px">No runs yet — trigger one above or wait for the weekly schedule.</div>
+    </div>
+  </div>
+  <div class="a-card">
+    <h3>System Status</h3>
+    <div class="sys-row"><span>PostgreSQL 16</span><span class="sys-val-ok">● Connected — etear_works</span></div>
+    <div class="sys-row"><span>FastAPI backend</span><span class="sys-val-ok">● Running — localhost:8000</span></div>
+    <div class="sys-row"><span>Next.js frontend</span><span class="sys-val-ok">● Running — localhost:3000</span></div>
+    <div class="sys-row"><span>Ollama gemma4:e4b</span><span class="sys-val-warn">● Local — localhost:11434</span></div>
+    <div class="sys-row"><span>Weekly scheduler</span><span class="sys-val-ok">● Active — Sunday 20:30 UTC</span></div>
+    <div class="sys-row"><span>OEM targets</span><span style="color:var(--text);font-weight:600">14 configured (Tesla, BYD, Hyundai, Kia, Rivian, Volvo, NIO, Tata, Mahindra, VinFast, Yutong, Proterra, BYD Bus, Olectra)</span></div>
+    <div class="sys-row"><span>Vehicles in DB</span><span style="color:var(--text);font-weight:600">8 records (6 passenger · 2 e-bus)</span></div>
+  </div>
+  <div class="a-card">
+    <h3>API Endpoints</h3>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);line-height:2">
+      <div><span style="color:var(--teal)">GET</span>  /vehicles/?segment=&amp;range_min=&amp;power_min=&amp;search=</div>
+      <div><span style="color:var(--teal)">GET</span>  /vehicles/{id}</div>
+      <div><span style="color:var(--teal)">GET</span>  /vehicles/meta/brands</div>
+      <div><span style="color:#FFD93D">POST</span> /compare/</div>
+      <div><span style="color:#FFD93D">POST</span> /reports/generate  → PDF download</div>
+      <div><span style="color:#FFD93D">POST</span> /admin/scrape/trigger</div>
+      <div><span style="color:var(--teal)">GET</span>  /admin/scrape/runs</div>
+      <div><span style="color:var(--teal)">GET</span>  /health</div>
+      <div style="margin-top:8px"><a href="http://localhost:8000/docs" target="_blank" style="color:var(--teal)">↗ Swagger UI — localhost:8000/docs</a></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+const VEHICLES=[
+  {id:"byd-seal",brand:"BYD",model:"Seal",variant:"AWD Performance",model_year:2024,segment:"passenger_sedan",wheelbase_mm:2920,length_mm:4800,width_mm:1875,height_mm:1460,kerb_weight_kg:2150,drive:"AWD",peak_power_kw:390,peak_torque_nm:670,top_speed_kmh:180,acceleration_0_100:3.8,battery_capacity_kwh:82.5,usable_capacity_kwh:79,battery_chemistry:"LFP",wltp_range_km:520,epa_range_km:null,arai_range_km:null,cltc_range_km:null,ac_charging_kw:11,dc_charging_kw:150,charge_0_80_min:30,v2l_supported:true,v2g_supported:false,energy_consumption_wh_km:158,adas_level:2,base_price_usd:36990,oem_product_url:"https://www.byd.com/en/cars/sealSeries/seal.html"},
+  {id:"hyundai-i6",brand:"Hyundai",model:"IONIQ 6",variant:"77.4 kWh AWD",model_year:2024,segment:"passenger_sedan",wheelbase_mm:2950,length_mm:4855,width_mm:1880,height_mm:1495,kerb_weight_kg:2030,drive:"AWD",peak_power_kw:239,peak_torque_nm:605,top_speed_kmh:185,acceleration_0_100:5.1,battery_capacity_kwh:77.4,usable_capacity_kwh:74,battery_chemistry:"NMC",wltp_range_km:614,epa_range_km:518,arai_range_km:null,cltc_range_km:null,ac_charging_kw:11,dc_charging_kw:233,charge_0_80_min:18,v2l_supported:true,v2g_supported:true,energy_consumption_wh_km:128,adas_level:2,base_price_usd:42450,oem_product_url:"https://www.hyundai.com/worldwide/en/eco/ioniq6/highlights"},
+  {id:"kia-ev9",brand:"Kia",model:"EV9",variant:"GT-Line AWD",model_year:2024,segment:"passenger_suv",wheelbase_mm:3100,length_mm:5010,width_mm:1980,height_mm:1755,kerb_weight_kg:2595,drive:"AWD",peak_power_kw:283,peak_torque_nm:700,top_speed_kmh:200,acceleration_0_100:5.3,battery_capacity_kwh:99.8,usable_capacity_kwh:96,battery_chemistry:"NMC",wltp_range_km:505,epa_range_km:477,arai_range_km:null,cltc_range_km:null,ac_charging_kw:11,dc_charging_kw:240,charge_0_80_min:24,v2l_supported:true,v2g_supported:true,energy_consumption_wh_km:196,adas_level:2,base_price_usd:64900,oem_product_url:"https://www.kia.com/worldwide/vehicles/ev9/highlights.html"},
+  {id:"olectra-c9",brand:"Olectra",model:"C9",variant:"Standard",model_year:2024,segment:"bus_city",wheelbase_mm:5800,length_mm:12000,width_mm:2550,height_mm:3200,kerb_weight_kg:null,drive:"RWD",peak_power_kw:130,peak_torque_nm:1500,top_speed_kmh:80,acceleration_0_100:null,battery_capacity_kwh:320,usable_capacity_kwh:null,battery_chemistry:"LFP",wltp_range_km:null,epa_range_km:null,arai_range_km:250,cltc_range_km:null,ac_charging_kw:null,dc_charging_kw:60,charge_0_80_min:210,v2l_supported:false,v2g_supported:false,energy_consumption_wh_km:null,adas_level:0,base_price_usd:null,oem_product_url:"https://www.olectra.com/ev-buses.html"},
+  {id:"tata-nexon",brand:"Tata Motors",model:"Nexon EV",variant:"Long Range",model_year:2024,segment:"passenger_suv",wheelbase_mm:2498,length_mm:3993,width_mm:1811,height_mm:1606,kerb_weight_kg:1595,drive:"FWD",peak_power_kw:143,peak_torque_nm:215,top_speed_kmh:150,acceleration_0_100:8.9,battery_capacity_kwh:40.5,usable_capacity_kwh:37,battery_chemistry:"NMC",wltp_range_km:null,epa_range_km:null,arai_range_km:465,cltc_range_km:null,ac_charging_kw:7.2,dc_charging_kw:50,charge_0_80_min:56,v2l_supported:true,v2g_supported:false,energy_consumption_wh_km:145,adas_level:1,base_price_usd:19200,oem_product_url:"https://ev.tatamotors.com/nexon-ev.php"},
+  {id:"tesla-my",brand:"Tesla",model:"Model Y",variant:"Long Range AWD",model_year:2024,segment:"passenger_suv",wheelbase_mm:2890,length_mm:4751,width_mm:1921,height_mm:1624,kerb_weight_kg:2003,drive:"AWD",peak_power_kw:351,peak_torque_nm:493,top_speed_kmh:217,acceleration_0_100:4.8,battery_capacity_kwh:82,usable_capacity_kwh:75,battery_chemistry:"NMC",wltp_range_km:533,epa_range_km:469,arai_range_km:null,cltc_range_km:null,ac_charging_kw:11,dc_charging_kw:250,charge_0_80_min:25,v2l_supported:false,v2g_supported:false,energy_consumption_wh_km:141,adas_level:2,base_price_usd:52990,oem_product_url:"https://www.tesla.com/modely"},
+  {id:"vinfast-vf6",brand:"VinFast",model:"VF 6",variant:"Plus",model_year:2024,segment:"passenger_crossover",wheelbase_mm:2650,length_mm:4238,width_mm:1820,height_mm:1594,kerb_weight_kg:1665,drive:"FWD",peak_power_kw:115,peak_torque_nm:165,top_speed_kmh:150,acceleration_0_100:9.5,battery_capacity_kwh:59.6,usable_capacity_kwh:56,battery_chemistry:"LFP",wltp_range_km:null,epa_range_km:null,arai_range_km:410,cltc_range_km:null,ac_charging_kw:11,dc_charging_kw:74,charge_0_80_min:30,v2l_supported:true,v2g_supported:false,energy_consumption_wh_km:155,adas_level:2,base_price_usd:18900,oem_product_url:"https://vinfastauto.in/vf-6"},
+  {id:"yutong-e12",brand:"Yutong",model:"E12",variant:"City",model_year:2024,segment:"bus_city",wheelbase_mm:6085,length_mm:12000,width_mm:2550,height_mm:3270,kerb_weight_kg:null,drive:"RWD",peak_power_kw:160,peak_torque_nm:1800,top_speed_kmh:80,acceleration_0_100:null,battery_capacity_kwh:375,usable_capacity_kwh:null,battery_chemistry:"LFP",wltp_range_km:null,epa_range_km:null,arai_range_km:null,cltc_range_km:350,ac_charging_kw:null,dc_charging_kw:80,charge_0_80_min:180,v2l_supported:false,v2g_supported:false,energy_consumption_wh_km:1050,adas_level:1,base_price_usd:320000,oem_product_url:"https://en.yutong.com/ev/"}
+];
+
+const COLORS=["#00C6AE","#FF6B6B","#FFD93D","#6BCB77"];
+let selected=[];
+let charts={};
+let filtered=[...VEHICLES];
+
+const rng=v=>v.wltp_range_km||v.epa_range_km||v.arai_range_km||v.cltc_range_km||null;
+const f=(v,u="",dp=0)=>v==null?"—":typeof v==="number"?(dp?v.toFixed(dp):Math.round(v))+(u?" "+u:""):String(v);
+
+function showPage(p){
+  document.querySelectorAll(".page").forEach(e=>e.classList.remove("show"));
+  document.querySelectorAll(".nav-btn").forEach(e=>e.classList.remove("active"));
+  document.getElementById("page-"+p).classList.add("show");
+  document.getElementById("nb-"+p).classList.add("active");
+  if(p==="compare")renderCompare();
+  if(p==="vehicles")renderVP();
+}
+
+function applyFilters(){
+  const s=document.getElementById("d-search").value.toLowerCase();
+  const seg=document.getElementById("d-seg").value;
+  const rmin=+document.getElementById("d-range").value||0;
+  const pmin=+document.getElementById("d-power").value||0;
+  const bmin=+document.getElementById("d-bat").value||0;
+  filtered=VEHICLES.filter(v=>{
+    if(s&&!(v.brand+" "+v.model).toLowerCase().includes(s))return false;
+    if(seg){
+      if(seg==="passenger"||seg==="bus"){if(!v.segment.startsWith(seg))return false;}
+      else if(v.segment!==seg)return false;
+    }
+    if(rmin){const r=rng(v);if(!r||r<rmin)return false;}
+    if(pmin&&(!v.peak_power_kw||v.peak_power_kw<pmin))return false;
+    if(bmin&&(!v.battery_capacity_kwh||v.battery_capacity_kwh<bmin))return false;
+    return true;
+  });
+  document.getElementById("cnt-total").textContent=filtered.length;
+  renderGrid();
+}
+
+function renderGrid(){
+  const g=document.getElementById("v-grid");
+  g.innerHTML="";
+  if(!filtered.length){g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--muted);font-size:13px">No vehicles match your filters</div>';return;}
+  filtered.forEach(v=>{
+    const isSel=selected.some(s=>s.id===v.id);
+    const r=rng(v);
+    const d=document.createElement("div");
+    d.className="v-card"+(isSel?" sel":"");
+    d.onclick=()=>toggle(v);
+    d.innerHTML=`
+      <div class="v-check">${isSel?'<svg width="10" height="10"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#060E17" stroke-width="1.8" fill="none"/></svg>':''}</div>
+      <div class="v-brand">${v.brand}</div>
+      <div class="v-model">${v.model}${v.variant?" · "+v.variant:""}</div>
+      <div class="v-meta">${v.model_year} · ${v.segment.replace("_"," ")}</div>
+      <div class="v-stats">
+        <div class="v-stat"><div class="v-stat-l">Battery</div><div class="v-stat-v">${f(v.battery_capacity_kwh,"kWh",1)}</div></div>
+        <div class="v-stat"><div class="v-stat-l">Power</div><div class="v-stat-v">${f(v.peak_power_kw,"kW")}</div></div>
+        <div class="v-stat"><div class="v-stat-l">Range</div><div class="v-stat-v">${f(r,"km")}</div></div>
+      </div>
+      <div class="v-tags">
+        ${v.ac_charging_kw?`<span class="tag">AC ${f(v.ac_charging_kw,"kW",1)}</span>`:""}
+        ${v.dc_charging_kw?`<span class="tag">DC ${f(v.dc_charging_kw,"kW")}</span>`:""}
+        ${v.v2l_supported?'<span class="tag teal">V2L</span>':""}
+        ${v.v2g_supported?'<span class="tag teal">V2G</span>':""}
+        ${v.drive?`<span class="tag">${v.drive}</span>`:""}
+      </div>
+      ${v.oem_product_url?`<a class="v-link" href="${v.oem_product_url}" target="_blank" onclick="event.stopPropagation()">↗ OEM page</a>`:""}`;
+    g.appendChild(d);
+  });
+}
+
+function toggle(v){
+  const i=selected.findIndex(s=>s.id===v.id);
+  if(i>=0)selected.splice(i,1);
+  else if(selected.length<4)selected.push(v);
+  updateBar();renderGrid();
+}
+
+function toggleSelectAll(){
+  const pass=VEHICLES.filter(v=>v.segment.startsWith("passenger")).slice(0,4);
+  const alreadyAll=pass.every(v=>selected.some(s=>s.id===v.id));
+  if(alreadyAll){selected=selected.filter(s=>!pass.some(p=>p.id===s.id));}
+  else{pass.forEach(v=>{if(!selected.some(s=>s.id===v.id)&&selected.length<4)selected.push(v);});}
+  updateBar();renderGrid();renderVP();
+}
+
+function updateBar(){
+  const bar=document.getElementById("action-bar");
+  const pill=document.getElementById("sel-pill");
+  document.getElementById("cnt-sel").textContent=selected.length;
+  if(selected.length>=2){
+    bar.style.display="flex";pill.style.display="block";
+    document.getElementById("av-stack").innerHTML=selected.map(v=>`<div class="av">${v.brand[0]}</div>`).join("");
+    document.getElementById("action-label").textContent=selected.map(v=>v.brand+" "+v.model).join(" vs ");
+  } else {
+    bar.style.display="none";
+    pill.style.display=selected.length>0?"block":"none";
+  }
+}
+
+function renderVP(){
+  const s=(document.getElementById("vp-search")||{value:""}).value.toLowerCase();
+  const seg=(document.getElementById("vp-seg")||{value:""}).value;
+  const vs=VEHICLES.filter(v=>{
+    if(s&&!(v.brand+" "+v.model).toLowerCase().includes(s))return false;
+    if(seg&&!v.segment.startsWith(seg))return false;
+    return true;
+  });
+  const el=document.getElementById("vp-list");
+  el.innerHTML="";
+  vs.forEach(v=>{
+    const isSel=selected.some(s=>s.id===v.id);
+    const r=rng(v);
+    const row=document.createElement("div");
+    row.className="vp-row";
+    row.style.borderColor=isSel?"rgba(0,198,174,.4)":"var(--border)";
+    row.innerHTML=`
+      <div>
+        <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--teal);text-transform:uppercase;letter-spacing:.12em;margin-bottom:2px">${v.brand}</div>
+        <div style="font-size:14px;font-weight:600;color:#fff">${v.model}${v.variant?" "+v.variant:""}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${v.model_year} · ${v.segment.replace("_"," ")} · ${v.drive||"—"}</div>
+        ${v.oem_product_url?`<a href="${v.oem_product_url}" target="_blank" style="font-size:10px;color:var(--muted);text-decoration:none;margin-top:6px;display:inline-block">↗ OEM page</a>`:""}
+      </div>
+      <div class="vp-nums">
+        <div class="vp-num"><div class="vp-num-l">Power</div><div class="vp-num-v">${f(v.peak_power_kw,"kW")}</div></div>
+        <div class="vp-num"><div class="vp-num-l">Torque</div><div class="vp-num-v">${f(v.peak_torque_nm,"Nm")}</div></div>
+        <div class="vp-num"><div class="vp-num-l">Battery</div><div class="vp-num-v">${f(v.battery_capacity_kwh,"kWh",1)}</div></div>
+        <div class="vp-num"><div class="vp-num-l">Range</div><div class="vp-num-v">${f(r,"km")}</div></div>
+        <div class="vp-num"><div class="vp-num-l">DC</div><div class="vp-num-v">${f(v.dc_charging_kw,"kW")}</div></div>
+        <div class="vp-num"><div class="vp-num-l">0-100</div><div class="vp-num-v">${f(v.acceleration_0_100,"s",1)}</div></div>
+        <div class="vp-num"><div class="vp-num-l">Price</div><div class="vp-num-v">${v.base_price_usd?"$"+Math.round(v.base_price_usd).toLocaleString():"—"}</div></div>
+      </div>
+      <button class="btn ${isSel?"btn-teal":"btn-ghost"}" onclick="toggle(VEHICLES.find(x=>x.id==='${v.id}'));renderVP()">${isSel?"✓ Selected":"+ Select"}</button>`;
+    el.appendChild(row);
+  });
+}
+
+function renderCompare(){
+  const vs=selected;
+  const box=document.getElementById("cmp-content");
+  const pdfBtn=document.getElementById("pdf-btn");
+  const title=document.getElementById("cmp-title");
+  Object.values(charts).forEach(c=>{try{c.destroy()}catch(e){}});
+  charts={};
+  if(vs.length<2){
+    box.innerHTML='<div class="empty"><h3>No vehicles selected</h3><p>Go to the Dashboard and select 2–4 EVs, then click Compare.</p><button class="btn btn-teal" onclick="showPage(\'dash\')">Go to Dashboard ›</button></div>';
+    pdfBtn.style.display="none";title.textContent="Select vehicles on the Dashboard";return;
+  }
+  pdfBtn.style.display="block";
+  title.textContent=vs.map(v=>v.brand+" "+v.model).join(" vs ");
+  box.innerHTML="";
+
+  // Vehicle header cards
+  const hg=document.createElement("div");
+  hg.className="c-header-grid";
+  hg.style.gridTemplateColumns=`repeat(${vs.length},1fr)`;
+  vs.forEach((v,i)=>{
+    const c=document.createElement("div");
+    c.className="c-vcard";
+    c.style.borderTopColor=COLORS[i];
+    c.innerHTML=`<div class="c-brand" style="color:${COLORS[i]}">${v.brand}</div><div class="c-model">${v.model}${v.variant?" "+v.variant:""}</div><div style="font-size:11px;color:var(--muted);margin-top:3px">${v.model_year} · ${v.segment.replace("_"," ")}</div>${v.oem_product_url?`<a href="${v.oem_product_url}" target="_blank" style="font-size:10px;color:var(--muted);text-decoration:none;margin-top:8px;display:block">↗ OEM page</a>`:""}`;
+    hg.appendChild(c);
+  });
+  box.appendChild(hg);
+
+  // Charts
+  const cg=document.createElement("div");
+  cg.className="charts-grid";
+  cg.innerHTML=`
+    <div class="chart-card"><div class="chart-title">Performance radar</div><div style="position:relative;height:280px"><canvas id="rc" role="img" aria-label="Radar comparing power, torque, range, battery, DC charging and efficiency"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Range comparison (km)</div><div style="position:relative;height:280px"><canvas id="bc" role="img" aria-label="Bar chart comparing WLTP, EPA and ARAI range"></canvas></div></div>
+    <div class="chart-card full"><div class="chart-title">Charging capability</div><div style="position:relative;height:180px"><canvas id="cc" role="img" aria-label="Bar chart comparing AC and DC charging speeds"></canvas></div></div>`;
+  box.appendChild(cg);
+
+  // Spec table
+  const sw=document.createElement("div");
+  sw.className="spec-wrap";
+  sw.style.marginBottom="12px";
+  const ROWS=[["Wheelbase","wheelbase_mm","mm"],["Length","length_mm","mm"],["Width","width_mm","mm"],["Height","height_mm","mm"],["Kerb weight","kerb_weight_kg","kg"],["Drive","drive",""],["Peak power","peak_power_kw","kW"],["Peak torque","peak_torque_nm","Nm"],["0–100 km/h","acceleration_0_100","s"],["Top speed","top_speed_kmh","km/h"],["Battery gross","battery_capacity_kwh","kWh"],["Battery usable","usable_capacity_kwh","kWh"],["Chemistry","battery_chemistry",""],["WLTP range","wltp_range_km","km"],["EPA range","epa_range_km","km"],["ARAI range","arai_range_km","km"],["CLTC range","cltc_range_km","km"],["AC charging","ac_charging_kw","kW"],["DC charging","dc_charging_kw","kW"],["0→80% time","charge_0_80_min","min"],["V2L","v2l_supported","bool"],["V2G","v2g_supported","bool"],["Consumption","energy_consumption_wh_km","Wh/km"],["ADAS level","adas_level",""],["Base price","base_price_usd","USD"]];
+  const LOW=["acceleration_0_100","charge_0_80_min","energy_consumption_wh_km","base_price_usd"];
+  let html=`<table class="spec-tbl"><thead><tr><th>Specification</th>${vs.map((v,i)=>`<th class="val-col" style="color:${COLORS[i]}">${v.brand}<br><span style="font-size:9px;font-weight:400;opacity:.7">${v.model}</span></th>`).join("")}</tr></thead><tbody>`;
+  ROWS.forEach(([lbl,key,unit])=>{
+    const vals=vs.map(v=>v[key]);
+    const nums=vals.map(v=>typeof v==="number"?v:null);
+    const valid=nums.filter(n=>n!==null);
+    const best=valid.length?(LOW.includes(key)?Math.min(...valid):Math.max(...valid)):null;
+    html+=`<tr><td>${lbl}</td>${vals.map((val,i)=>{
+      let d;
+      if(val==null)d="—";
+      else if(unit==="bool")d=val?"✓ Yes":"✗ No";
+      else if(unit==="USD")d="$"+Math.round(val).toLocaleString();
+      else if(typeof val==="number")d=(unit==="kWh"||unit==="s"?val.toFixed(1):Math.round(val))+(unit?" "+unit:"");
+      else d=val;
+      const isBest=best!==null&&typeof val==="number"&&val===best;
+      return`<td class="val-col${isBest?" best":""}">${d}</td>`;
+    }).join("")}</tr>`;
+  });
+  html+=`</tbody></table>`;
+  sw.innerHTML=html;
+  box.appendChild(sw);
+  box.innerHTML+=`<p style="font-size:10px;color:var(--muted);text-align:center;padding:4px">Green = best in class · Data via Etear Works AI processing</p>`;
+
+  // Build charts
+  setTimeout(()=>{
+    const nm=(v,max)=>v?Math.round((v/max)*100):0;
+    charts.r=new Chart(document.getElementById("rc"),{type:"radar",data:{
+      labels:["Power","Torque","Range","Battery","DC Charge","Efficiency"],
+      datasets:vs.map((v,i)=>({label:v.brand+" "+v.model,data:[nm(v.peak_power_kw,700),nm(v.peak_torque_nm,1800),nm(rng(v),700),nm(v.battery_capacity_kwh,400),nm(v.dc_charging_kw,350),v.energy_consumption_wh_km?Math.max(0,Math.round(100-(v.energy_consumption_wh_km/10))):50],borderColor:COLORS[i],backgroundColor:COLORS[i]+"18",borderWidth:2,pointBackgroundColor:COLORS[i],pointRadius:3}))
+    },options:{responsive:true,maintainAspectRatio:false,scales:{r:{beginAtZero:true,max:100,ticks:{display:false,stepSize:25},grid:{color:"rgba(139,167,192,.15)"},pointLabels:{font:{size:10,family:"DM Sans"},color:"#8BA7C0"}}},plugins:{legend:{position:"bottom",labels:{font:{size:10,family:"DM Sans"},color:"#8BA7C0",boxWidth:10,padding:12}}}}});
+
+    charts.b=new Chart(document.getElementById("bc"),{type:"bar",data:{
+      labels:vs.map(v=>v.brand+" "+v.model.split(" ")[0]),
+      datasets:[{label:"WLTP",data:vs.map(v=>v.wltp_range_km||0),backgroundColor:"#00C6AE",borderRadius:3},{label:"EPA",data:vs.map(v=>v.epa_range_km||0),backgroundColor:"#00A896",borderRadius:3},{label:"ARAI",data:vs.map(v=>v.arai_range_km||0),backgroundColor:"#1E3A5F",borderRadius:3}]
+    },options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,grid:{color:"rgba(139,167,192,.1)"},ticks:{color:"#8BA7C0",font:{size:10}}},x:{grid:{display:false},ticks:{color:"#8BA7C0",font:{size:10}}}},plugins:{legend:{position:"bottom",labels:{font:{size:10,family:"DM Sans"},color:"#8BA7C0",boxWidth:10,padding:10}}}}});
+
+    charts.c=new Chart(document.getElementById("cc"),{type:"bar",data:{
+      labels:vs.map(v=>v.brand+" "+v.model.split(" ")[0]),
+      datasets:[{label:"AC kW",data:vs.map(v=>v.ac_charging_kw||0),backgroundColor:"#185FA5",borderRadius:3},{label:"DC kW",data:vs.map(v=>v.dc_charging_kw||0),backgroundColor:"#378ADD",borderRadius:3}]
+    },options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,grid:{color:"rgba(139,167,192,.1)"},ticks:{color:"#8BA7C0",font:{size:10}}},x:{grid:{display:false},ticks:{color:"#8BA7C0",font:{size:10}}}},plugins:{legend:{position:"bottom",labels:{font:{size:10,family:"DM Sans"},color:"#8BA7C0",boxWidth:10,padding:10}}}}});
+  },80);
+}
+
+let runCount=0;
+function doScrape(){
+  const btn=document.getElementById("scrape-btn");
+  const msg=document.getElementById("scrape-msg");
+  btn.disabled=true;btn.textContent="Running…";
+  const steps=["[01/14] Crawling Tesla.com…","[04/14] Crawling BYD.com…","[07/14] Downloading brochures…","[10/14] Processing with gemma4:e4b…","[13/14] Upserting to PostgreSQL…","[14/14] Complete — 8 added, 3 updated, 12 PDFs"];
+  let i=0;
+  const iv=setInterval(()=>{
+    msg.textContent=steps[i++];
+    if(i>=steps.length){
+      clearInterval(iv);
+      btn.disabled=false;btn.textContent="▶ Trigger Full Scrape";
+      runCount++;
+      const ts=new Date().toLocaleString();
+      const row=`<div class="run-row"><div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--text)">run-${String(runCount).padStart(3,"0")} · ${ts}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">14 OEM targets · Playwright + gemma4:e4b</div></div><div style="display:flex;gap:16px;text-align:center;font-size:11px"><div><div style="color:var(--teal);font-weight:700">8</div><div style="color:var(--muted)">Added</div></div><div><div style="color:#FFD93D;font-weight:700">3</div><div style="color:var(--muted)">Updated</div></div><div><div style="color:#6BCB77;font-weight:700">12</div><div style="color:var(--muted)">PDFs</div></div></div><span class="badge badge-ok">completed</span></div>`;
+      const hist=document.getElementById("run-history");
+      if(hist.querySelector("div[style*='text-align:center']"))hist.innerHTML="";
+      hist.insertAdjacentHTML("afterbegin",row);
+    }
+  },600);
+}
+
+function printPage(){window.print();}
+
+// Init
+renderGrid();
+</script>
+
+<style media="print">
+nav{display:none}
+main{padding:0}
+.page{display:block!important}
+.filter-row,.action-bar,.stat-row{display:none!important}
+</style>
+</body>
+</html>
