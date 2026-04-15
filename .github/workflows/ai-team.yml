@@ -1,0 +1,25 @@
+name: AI Multi-Tasker
+on: [push] # This makes the AI run every time you upload code!
+
+jobs:
+  ai-robot-work:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get my code
+        uses: actions/checkout@v4
+
+      - name: Ask the AI Team to help
+        run: |
+          echo "Starting the robots..."
+          # Claude checks the code
+          gh models run anthropic/claude-3-5-sonnet "Check if there are any bugs in my code."
+          
+          # Gemma gives ideas
+          gh models run gemma-4 "Give me 2 ideas to make this code better."
+          
+          # Minimax summarizes
+          gh models run minimax-2.7 "Summarize what this project does in one sentence."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMMA_KEY: ${{ secrets.GEMMA_API_KEY }}
+          MINIMAX_KEY: ${{ secrets.MINIMAX_API_KEY }}
