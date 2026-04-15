@@ -1,25 +1,36 @@
-name: AI Multi-Tasker
-on: [push] # This makes the AI run every time you upload code!
+name: LinkedIn Strategy AI Team
+on: [push]
 
 jobs:
   ai-robot-work:
     runs-on: ubuntu-latest
     steps:
-      - name: Get my code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Ask the AI Team to help
-        run: |
-          echo "Starting the robots..."
-          # Claude checks the code
-          gh models run anthropic/claude-3-5-sonnet "Check if there are any bugs in my code."
-          
-          # Gemma gives ideas
-          gh models run gemma-4 "Give me 2 ideas to make this code better."
-          
-          # Minimax summarizes
-          gh models run minimax-2.7 "Summarize what this project does in one sentence."
+      - name: Install AI Switchboard
+        run: gh extension install github/gh-models
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GEMMA_KEY: ${{ secrets.GEMMA_API_KEY }}
-          MINIMAX_KEY: ${{ secrets.MINIMAX_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Ask the AI Team to help
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # 1. Engineering Logic (DeepSeek)
+          gh models run deepseek-ai/deepseek-r1 "Review the technical feasibility of Zonal E/E decoupling in AIDV for a senior engineer audience. Focus on safety and failsafes." > engineering_logic.txt
+
+          # 2. LinkedIn Draft (Grok 3)
+          gh models run xai/grok-3 "Write a LinkedIn post about AIDV 'Superbrains'. Use 🔸 bullets. Tone: Bold/Influencer. Context: Pune EV Hub." > linkedin_draft.txt
+
+          # 3. Data Report (Llama 4)
+          gh models run meta/llama-4-maverick-17b-128e-instruct-fp8 "Summarize the major differences between traditional E/E and AIDV Centralized architectures in a structured list." > tech_report.txt
+
+      - name: Save My LinkedIn Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: strategy-outputs
+          path: |
+            engineering_logic.txt
+            linkedin_draft.txt
+            tech_report.txt
