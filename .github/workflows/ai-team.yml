@@ -4,6 +4,9 @@ on: [push]
 jobs:
   ai-robot-work:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      models: read    # This is your "Security Badge" for DeepSeek & Grok
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -17,14 +20,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # 1. Engineering Logic (DeepSeek)
-          gh models run deepseek-ai/deepseek-r1 "Review the technical feasibility of Zonal E/E decoupling in AIDV for a senior engineer audience. Focus on safety and failsafes." > engineering_logic.txt
+          # Engineering Logic (DeepSeek)
+          gh models run deepseek-ai/deepseek-r1 "Review technical feasibility of Zonal E/E decoupling." > engineering_logic.txt
 
-          # 2. LinkedIn Draft (Grok 3)
-          gh models run xai/grok-3 "Write a LinkedIn post about AIDV 'Superbrains'. Use 🔸 bullets. Tone: Bold/Influencer. Context: Pune EV Hub." > linkedin_draft.txt
+          # LinkedIn Draft (Grok 3)
+          gh models run xai/grok-3 "Write a LinkedIn post with orange diamonds about AIDV." > linkedin_draft.txt
 
-          # 3. Data Report (Llama 4)
-          gh models run meta/llama-4-maverick-17b-128e-instruct-fp8 "Summarize the major differences between traditional E/E and AIDV Centralized architectures in a structured list." > tech_report.txt
+          # Data Report (Llama 4)
+          gh models run meta/llama-4-maverick-17b-128e-instruct-fp8 "Summarize traditional vs Centralized E/E." > tech_report.txt
 
       - name: Save My LinkedIn Reports
         uses: actions/upload-artifact@v4
