@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      models: read    # This is your "Security Badge" for DeepSeek & Grok
+      models: read
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -20,14 +20,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Engineering Logic (DeepSeek)
-          gh models run deepseek-ai/deepseek-r1 "Review technical feasibility of Zonal E/E decoupling." > engineering_logic.txt
+          # 1. Engineering Logic (DeepSeek)
+          gh models run deepseek/deepseek-r1 "Review technical feasibility of Zonal E/E decoupling in EVs." > engineering_logic.txt
 
-          # LinkedIn Draft (Grok 3)
-          gh models run xai/grok-3 "Write a LinkedIn post with orange diamonds about AIDV." > linkedin_draft.txt
+          # 2. LinkedIn Draft (Grok 3)
+          gh models run xai/grok-3 "Write a LinkedIn post with orange diamonds about AIDV superbrains." > linkedin_draft.txt
 
-          # Data Report (Llama 4)
-          gh models run meta/llama-4-maverick-17b-128e-instruct-fp8 "Summarize traditional vs Centralized E/E." > tech_report.txt
+          # 3. Data Report (Llama 4)
+          gh models run meta/llama-4-maverick-17b-128e-instruct-fp8 "Compare traditional vs Centralized E/E architectures." > tech_report.txt
 
       - name: Save My LinkedIn Reports
         uses: actions/upload-artifact@v4
